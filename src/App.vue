@@ -2,7 +2,7 @@
     <v-app>
         <v-app-bar
             app
-            color="#cca900"
+            color="#ff0000"
             dark
         >
             <div class="d-flex align-center">
@@ -10,15 +10,13 @@
                     href="/"
                     text
                 >
-                    <v-img
-                        alt="Vuetify Logo"
-                        class="shrink mr-2"
-                        contain
-                        src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
-                        transition="scale-transition"
-                        width="40"
-                    />
-                    <span class="mr-2" style="text-shadow: 1px 1px 1px #000;">Countdown</span>
+                    <v-icon
+                        large
+                        class="mr-2"
+                    >
+                        mdi-timer-outline
+                    </v-icon>
+                    <h2>Countdown</h2>
                 </v-btn>
             </div>
 
@@ -43,8 +41,8 @@
                 v-model="importBtn"
                 width="500"
             >
-                <v-card height="500">
-                    <v-card-title class="white--text mt-8">
+                <v-card height="500" class="white--text">
+                    <v-card-title class="mt-8">
                         <p class="ml-3">Import</p>
                     </v-card-title>
                     <v-card-text class="text-center">
@@ -60,7 +58,11 @@
                         >
                             <span class="mr-2">Import the file</span>
                         </v-btn>
-                        <pre id="result"></pre>
+                        <h2 style="color: red; margin: 5px 0;">All current data will be lost!</h2>
+                        <ul class="white--text">
+                            <li>Must be a JSON File</li>
+                            <li>Must only have title and date parameters</li>
+                        </ul>
                     </v-card-text>
                 </v-card>
             </v-dialog>
@@ -118,10 +120,8 @@ export default {
                     });
 
                     localStorage.setItem('countdown_items', JSON.stringify(newCountdownItems));
-                    this.importBtn = false,
-                    // const formatted = JSON.stringify(result, null, 2);
-                    // document.getElementById('result').innerHTML = formatted;
-                    console.log(newCountdownItems);
+                    this.importBtn = false;
+                    window.location.reload();
                 } catch (e) {
                     console.log(e);
                 }

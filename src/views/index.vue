@@ -56,10 +56,9 @@
                                     </v-col>
                                     <v-col
                                         align-self="start"
-                                        cols="2"
+                                        cols="1"
                                     >
                                         <v-btn
-                                            class="mt-1"
                                             type="submit"
                                             :disabled="invalid || pristine"
                                             color="primary"
@@ -67,6 +66,18 @@
                                             {{ edit ? 'Edit' : 'Create'}}
                                         </v-btn>
                                     </v-col>
+                                    <v-col
+                                        align-self="start"
+                                        cols="1"
+                                    >
+                                        <v-btn
+                                            color="#ff0000"
+                                            @click="clearBtnMethod"
+                                        >
+                                            Clear
+                                        </v-btn>
+                                    </v-col>
+                                    <v-spacer />
                                 </v-row>
                             </form>
                         </ValidationObserver>
@@ -92,9 +103,10 @@
                             <v-col
                                 align-self="center"
                                 cols="6"
+                                class="white--text"
                             >
                                 <h1>{{ countdown_item.title }}</h1>
-                                <h3 class="mt-4" style="color: #cca900;">
+                                <h3 class="mt-4" style="color: red;">
                                     {{
                                         countdown_item.date.endsWith('00:00:00')
                                             ? countdown_item.date.substring(0, 10)
@@ -218,7 +230,7 @@ export default {
             this.item.id = null;
             this.item.title = null;
             let today = new Date();
-            this.item.date = new Date(`${today.getFullYear()}-${today.getMonth()}`);
+            this.item.date = new Date(`${today.getFullYear()}-${today.getMonth() + 1}`);
             this.sortCountdownData();
         },
         deleteCountdownItem(id) {
@@ -247,6 +259,15 @@ export default {
             } catch (e) {
                 console.log(e);
             }
+        },
+        clearBtnMethod() {
+            this.edit = false;
+            let today = new Date();
+            this.item = {
+                id: null,
+                title: null,
+                date: new Date(`${today.getFullYear()}-${today.getMonth() + 1}`),
+            };
         }
     },
     watch: {
@@ -275,3 +296,18 @@ export default {
     },
 };
 </script>
+
+<style lang="scss">
+.flip-card__top,
+.flip-card__bottom,
+.flip-card__back-bottom,
+.flip-card__back::before,
+.flip-card__back::after,
+.flip-card__top-4digits,
+.flip-card__bottom-4digits,
+.flip-card__back-bottom-4digits,
+.flip-card__back-4digits::before,
+.flip-card__back-4digits::after {
+    color: #ff0000 !important;
+}
+</style>
