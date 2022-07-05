@@ -8,7 +8,7 @@
                             ref="observer"
                             v-slot="{ invalid, pristine }"
                         >
-                            <form @submit.prevent="addCountdown">
+                            <form @submit.prevent="addOrEditCountdown">
                                 <v-row
                                     justify="center"
                                     align="center"
@@ -43,9 +43,20 @@
                                             <v-datetime-picker
                                                 label="Datetime"
                                                 v-model="item.date"
-                                                :text-field-props="textFieldProps"
-                                                :date-picker-props="dateProps"
-                                                :time-picker-props="timeProps"
+                                                ref="datetime"
+                                                :text-field-props="{
+                                                    appendIcon: 'mdi-calendar',
+                                                    dense: true,
+                                                    outlined: true
+                                                }"
+                                                :date-picker-props="{
+                                                    firstDayOfWeek: 1
+                                                }"
+                                                :time-picker-props="{
+                                                    format: '24hr',
+                                                    ampmInTitle: true,
+                                                    scrollable: true
+                                                }"
                                             >
                                                 <template slot="dateIcon">
                                                     <v-icon>mdi-calendar</v-icon>
@@ -59,26 +70,29 @@
                                     <v-col
                                         align-self="start"
                                         cols="12"
-                                        md="1"
+                                        md="2"
+                                        lg="1"
                                     >
                                         <v-btn
                                             type="submit"
                                             :disabled="invalid || pristine"
                                             color="primary"
                                         >
-                                            {{ edit ? 'Save' : 'Create'}}
+                                            {{ isEditing ? 'Save' : 'Create'}}
                                         </v-btn>
                                     </v-col>
                                     <v-col
                                         align-self="start"
                                         cols="12"
-                                        md="1"
+                                        md="2"
+                                        lg="1"
                                     >
                                         <v-btn
                                             color="#ff0000"
-                                            @click="clearBtnMethod"
+                                            :disabled="!item.title && !item.date"
+                                            @click="resetItemValues"
                                         >
-                                            {{ edit ? 'Cancel' : 'Clear'}}
+                                            {{ isEditing ? 'Cancel' : 'Clear'}}
                                         </v-btn>
                                     </v-col>
                                     <v-spacer />
@@ -89,13 +103,13 @@
                 </v-row>
             </v-container>
 
-            <h1 v-if="!countdown_items.length">
+            <h1 v-if="!countdownItems.length">
                 Countdown List is empty.
             </h1>
 
             <div
-                v-bind:key="`${countdown_item.id}-${countdown_item.id}`"
-                v-for="countdown_item in countdown_items"
+                v-for="countdownItem in countdownItems"
+                v-bind:key="countdownItem.id"
                 class="mb-5"
             >
                 <v-card
@@ -110,12 +124,12 @@
                                 cols="12"
                                 md="6"
                             >
-                                <h1>{{ countdown_item.title }}</h1>
+                                <h1>{{ countdownItem.title }}</h1>
                                 <h3 class="mt-4" style="color: red;">
                                     {{
-                                        countdown_item.date.endsWith('00:00:00')
-                                            ? countdown_item.date.substring(0, 10)
-                                            : countdown_item.date
+                                        countdownItem.date.endsWith('00:00:00')
+                                            ? countdownItem.date.substring(0, 10)
+                                            : countdownItem.date
                                     }}
                                 </h3>
                             </v-col>
@@ -125,12 +139,12 @@
                                 cols="12"
                                 md="4"
                             >
-                                <h1 v-if="new Date(countdown_item.date).getTime() < new Date().getTime()">
+                                <h1 v-if="new Date(countdownItem.date).getTime() < new Date().getTime()">
                                     Time expired
                                 </h1>
                                 <flip-countdown
                                     v-else
-                                    :deadline="countdown_item.date.toString()"
+                                    :deadline="countdownItem.date.toString()"
                                     countdown-size="xl"
                                     label-size="xl"
                                 />
@@ -142,14 +156,14 @@
                             >
                                 <v-btn
                                     text
-                                    @click="editCountdownItem(countdown_item.id)"
+                                    @click="setEditItem(countdownItem.id)"
                                 >
                                     Edit
                                 </v-btn>
                                 <v-btn
                                     class="ml-5"
                                     text
-                                    @click="deleteCountdownItem(countdown_item.id)"
+                                    @click="deleteCountdownItem(countdownItem.id)"
                                 >
                                     Remove
                                 </v-btn>
@@ -174,128 +188,79 @@ export default {
     },
     data() {
         return {
-            countdown_items: null,
+            countdownItems: null,
             item: {
                 id: null,
                 title: null,
-                date: null,
+                date: '',
             },
-            dateMenu: false,
-            edit: false,
-            edit_data : {
-                id: null,
-                title: null,
-                date: null,
-            },
-            textFieldProps: {
-                appendIcon: 'mdi-calendar',
-                dense: true,
-                outlined: true
-            },
-            dateProps: {
-            },
-            timeProps: {
-                format: '24hr',
-                ampmInTitle: true,
-                scrollable: true
-            }
+            isEditing: false,
         };
     },
     created() {
-        const local = localStorage.getItem('countdown_items');
-        const localObj = JSON.parse(local);
-
-        if (localObj == null) {
-            this.countdown_items = [];
-            this.sortCountdownData();
-        } else {
-            this.countdown_items = JSON.parse(local);
-            this.sortCountdownData();
-        }
+        this.countdownItems = JSON.parse(localStorage.getItem('countdownItems')) ?? [];
+        this.sortCountdownData();
     },
     methods: {
-        addCountdown() {
-            const dt = dateFormat(this.item.date, 'yyyy-mm-dd HH:MM:ss');
-            if (this.edit) {
-                let objIndex = this.countdown_items.findIndex(obj => obj.id === this.item.id);
-                this.countdown_items[objIndex].title = this.item.title;
-                this.countdown_items[objIndex].date = dt;
+        addOrEditCountdown() {
+            const date = dateFormat(this.item.date, 'yyyy-mm-dd HH:MM:ss');
+            if (this.isEditing) {
+                let objIndex = this.countdownItems.findIndex(obj => obj.id === this.item.id);
+                this.countdownItems[objIndex].title = this.item.title;
+                this.countdownItems[objIndex].date = date;
+                this.$emit('showSnackBarMessage', 'green', 'Item succesfully edited');
             } else {
-                const newCountdownItem = {
+                this.countdownItems.push({
                     id: v4(),
                     title: this.item.title,
-                    date: dt
-                };
-                this.countdown_items = [newCountdownItem, ...this.countdown_items];
+                    date
+                });
+                this.$emit('showSnackBarMessage', 'green', 'Item succesfully created');
             }
-            this.edit = false;
-            this.item.id = null;
-            this.item.title = null;
-            let today = new Date();
-            this.item.date = new Date(`${today.getFullYear()}-${today.getMonth() + 1}`);
-            this.sortCountdownData();
+            this.resetItemValues();
         },
         deleteCountdownItem(id) {
-            this.countdown_items = this.countdown_items.filter(countdown_item => countdown_item.id !== id);
-            this.sortCountdownData();
+            this.countdownItems = this.countdownItems.filter(countdownItem => countdownItem.id !== id);
+            this.$emit('showSnackBarMessage', 'green', 'Item succesfully deleted');
+            this.resetItemValues();
         },
-        editCountdownItem(id) {
-            window.scrollTo(0,0);
-            let objIndex = this.countdown_items.findIndex(obj => obj.id === id);
-            this.edit_data.title = this.countdown_items[objIndex].title;
-            this.edit_data.date = this.countdown_items[objIndex].date;
-            this.edit_data.id = id;
+        setEditItem(id) {
+            window.scroll({
+                top: 0,
+                behavior: 'smooth'
+            });
+
+            const { title, date } = this.countdownItems.find(obj => obj.id === id);
+            this.isEditing = true;
+            this.item = {
+                title,
+                date: new Date(date),
+                id
+            };
         },
         sortCountdownData() {
-            try {
-                this.countdown_items.sort(function(a, b) {
-                    const nameA = new Date(a.date).getTime();
-                    const nameB = new Date(b.date).getTime();
-                    if (nameA < nameB) {
-                        return -1;
-                    }
-                    if (nameA > nameB) {
-                        return 1;
-                    }
-                    return 0;
-                });
-            } catch (e) {
-                console.log(e);
-            }
+            this.countdownItems.sort((a, b) => {
+                const dateA = new Date(a.date).getTime();
+                const dateB = new Date(b.date).getTime();
+
+                return dateA < dateB ? -1 : (dateA > dateB ? 1 : 0);
+            });
         },
-        clearBtnMethod() {
-            this.edit = false;
-            let today = new Date();
-            this.item = {
-                id: null,
-                title: null,
-                date: new Date(`${today.getFullYear()}-${today.getMonth() + 1}`),
-            };
+        resetItemValues() {
+            this.isEditing = false;
+            this.item = {};
+            this.$refs.datetime.date = '';
+            this.$refs.datetime.time = '00:00:00';
+            this.sortCountdownData();
         }
     },
     watch: {
-        countdown_items: {
+        countdownItems: {
             handler() {
-                localStorage.setItem('countdown_items', JSON.stringify(this.countdown_items));
+                localStorage.setItem('countdownItems', JSON.stringify(this.countdownItems));
             },
             deep: true,
         },
-        title: {
-            handler() {
-                if (this.item.title === '') {
-                    this.edit = false;
-                }
-            }
-        },
-        edit_data: {
-            handler() {
-                this.item.id = this.edit_data.id;
-                this.item.title = this.edit_data.title;
-                this.item.date = new Date(this.edit_data.date);
-                this.edit = true;
-            },
-            deep: true,
-        }
     },
 };
 </script>
