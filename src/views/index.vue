@@ -15,7 +15,8 @@
                                 >
                                     <v-col
                                         align-self="center"
-                                        cols="5"
+                                        cols="12"
+                                        md="5"
                                     >
                                         <ValidationProvider
                                             name="Name"
@@ -24,7 +25,7 @@
                                             <v-text-field
                                                 v-model="item.title"
                                                 label="Name"
-                                                autocomplete="false"
+                                                autocomplete="off"
                                                 dense
                                                 outlined
                                             />
@@ -32,7 +33,8 @@
                                     </v-col>
                                     <v-col
                                         align-self="start"
-                                        cols="3"
+                                        cols="12"
+                                        md="3"
                                     >
                                         <ValidationProvider
                                             name="Date"
@@ -56,25 +58,27 @@
                                     </v-col>
                                     <v-col
                                         align-self="start"
-                                        cols="1"
+                                        cols="12"
+                                        md="1"
                                     >
                                         <v-btn
                                             type="submit"
                                             :disabled="invalid || pristine"
                                             color="primary"
                                         >
-                                            {{ edit ? 'Edit' : 'Create'}}
+                                            {{ edit ? 'Save' : 'Create'}}
                                         </v-btn>
                                     </v-col>
                                     <v-col
                                         align-self="start"
-                                        cols="1"
+                                        cols="12"
+                                        md="1"
                                     >
                                         <v-btn
                                             color="#ff0000"
                                             @click="clearBtnMethod"
                                         >
-                                            Clear
+                                            {{ edit ? 'Cancel' : 'Clear'}}
                                         </v-btn>
                                     </v-col>
                                     <v-spacer />
@@ -85,9 +89,9 @@
                 </v-row>
             </v-container>
 
-            <p v-if="!countdown_items.length">
+            <h1 v-if="!countdown_items.length">
                 Countdown List is empty.
-            </p>
+            </h1>
 
             <div
                 v-bind:key="`${countdown_item.id}-${countdown_item.id}`"
@@ -101,9 +105,10 @@
                     <v-card-text>
                         <v-row>
                             <v-col
-                                align-self="center"
-                                cols="6"
                                 class="white--text"
+                                align-self="center"
+                                cols="12"
+                                md="6"
                             >
                                 <h1>{{ countdown_item.title }}</h1>
                                 <h3 class="mt-4" style="color: red;">
@@ -117,7 +122,8 @@
                             <v-spacer />
                             <v-col
                                 align-self="center"
-                                cols="4"
+                                cols="12"
+                                md="4"
                             >
                                 <h1 v-if="new Date(countdown_item.date).getTime() < new Date().getTime()">
                                     Time expired
@@ -131,17 +137,17 @@
                             </v-col>
                             <v-col
                                 align-self="center"
-                                cols="2"
+                                cols="12"
+                                md="2"
                             >
                                 <v-btn
-                                    color="lighten-2"
                                     text
                                     @click="editCountdownItem(countdown_item.id)"
                                 >
                                     Edit
                                 </v-btn>
                                 <v-btn
-                                    color="lighten-2"
+                                    class="ml-5"
                                     text
                                     @click="deleteCountdownItem(countdown_item.id)"
                                 >
@@ -157,7 +163,6 @@
 </template>
 
 <script>
-import countdownDataJSON from '../assets/data.json';
 import flipCountdown from 'vue2-flip-countdown';
 import dateFormat from 'dateformat';
 import { v4 } from 'uuid';
@@ -188,7 +193,6 @@ export default {
                 outlined: true
             },
             dateProps: {
-                /* headerColor: 'red' */
             },
             timeProps: {
                 format: '24hr',
@@ -200,11 +204,9 @@ export default {
     created() {
         const local = localStorage.getItem('countdown_items');
         const localObj = JSON.parse(local);
+
         if (localObj == null) {
-            this.countdown_items = countdownDataJSON;
-            this.sortCountdownData();
-        } else if (localObj.length == 0) {
-            this.countdown_items = countdownDataJSON;
+            this.countdown_items = [];
             this.sortCountdownData();
         } else {
             this.countdown_items = JSON.parse(local);
@@ -238,6 +240,7 @@ export default {
             this.sortCountdownData();
         },
         editCountdownItem(id) {
+            window.scrollTo(0,0);
             let objIndex = this.countdown_items.findIndex(obj => obj.id === id);
             this.edit_data.title = this.countdown_items[objIndex].title;
             this.edit_data.date = this.countdown_items[objIndex].date;

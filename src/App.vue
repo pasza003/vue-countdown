@@ -45,28 +45,40 @@
                     <v-card-title class="mt-8">
                         <p class="ml-3">Import</p>
                     </v-card-title>
-                    <v-card-text class="text-center">
-                        <v-file-input
-                            id="selectFiles"
-                            label="Import"
-                            accept=".json"
-                        />
-                        <v-btn
-                            text
-                            @click="importFile"
-                            id="import"
-                        >
-                            <span class="mr-2">Import the file</span>
-                        </v-btn>
-                        <h2 style="color: red; margin: 5px 0;">All current data will be lost!</h2>
-                        <ul class="white--text">
+                    <v-card-text>
+                        <v-container class="text-center">
+                            <v-file-input
+                                id="selectFiles"
+                                label="Import"
+                                accept=".json"
+                            />
+                            <v-btn
+                                text
+                                @click="importFile"
+                                id="import"
+                            >
+                                <span class="mr-2">Import the file</span>
+                            </v-btn>
+                        </v-container>
+                        <h2 style="color: red;" class="mt-5">All current data will be lost!</h2>
+                        <ul class="white--text mt-2">
                             <li>Must be a JSON File</li>
-                            <li>Must only have title and date parameters</li>
+                            <li>Data must only have title and date parameters</li>
+                            <li>Data can contain an id parameter, but will not be imported</li>
                         </ul>
                     </v-card-text>
                 </v-card>
             </v-dialog>
             <router-view/>
+            <v-snackbar
+                v-model="snackbar"
+                top
+                :color="snackbarColor"
+                timeout="2000"
+                class="text-center"
+            >
+                <b>{{ snackbarMsg }}</b>
+            </v-snackbar>
         </v-main>
     </v-app>
 </template>
@@ -80,6 +92,9 @@ export default {
     data: () => ({
         importBtn: false,
         exportBtn: false,
+        snackbarMsg: null,
+        snackbar: false,
+        snackbarColor: null
     }),
     methods: {
         importFile() {
@@ -105,10 +120,16 @@ export default {
                         }
 
                         if (keys.length != keyAmount) {
+                            this.snackbarMsg = 'Error while importing, incorrect data';
+                            this.snackbarColor = 'red';
+                            this.snackbar = true;
                             throw new Error('Not correct amount of keys');
                         }
 
                         if (!keys.includes('title') || !keys.includes('date')) {
+                            this.snackbarMsg = 'Error while importing, incorrect data';
+                            this.snackbarColor = 'red';
+                            this.snackbar = true;
                             throw new Error('Incorrect keys');
                         }
 
@@ -121,6 +142,9 @@ export default {
 
                     localStorage.setItem('countdown_items', JSON.stringify(newCountdownItems));
                     this.importBtn = false;
+                    this.snackbarMsg = 'Successful import';
+                    this.snackbarColor = 'green';
+                    this.snackbar = true;
                     window.location.reload();
                 } catch (e) {
                     console.log(e);
@@ -137,7 +161,7 @@ export default {
             a.download = 'export.json';
             document.body.appendChild(a);
             a.click();
-            setTimeout(function() {
+            setTimeout(() => {
                 document.body.removeChild(a);
                 window.URL.revokeObjectURL(url);
             }, 0);
