@@ -12,6 +12,7 @@
                                 <v-row
                                     justify="center"
                                     align="center"
+                                    :class="{'mb-5': $vuetify.breakpoint.xs || $vuetify.breakpoint.sm}"
                                 >
                                     <v-col
                                         align-self="center"
@@ -19,15 +20,17 @@
                                         md="5"
                                     >
                                         <ValidationProvider
-                                            name="Name"
+                                            v-slot="{ errors }"
+                                            name="Név"
                                             rules="required"
                                         >
                                             <v-text-field
                                                 v-model="item.title"
-                                                label="Name"
+                                                label="Név"
                                                 autocomplete="off"
                                                 dense
                                                 outlined
+                                                :error-messages="errors"
                                             />
                                         </ValidationProvider>
                                     </v-col>
@@ -37,20 +40,24 @@
                                         md="3"
                                     >
                                         <ValidationProvider
-                                            name="Date"
+                                            name="Dátum"
                                             rules="required"
                                         >
                                             <v-datetime-picker
-                                                label="Datetime"
+                                                label="Dátum"
                                                 v-model="item.date"
                                                 ref="datetime"
+                                                clearText="TÖRLÉS"
+                                                okText="OK"
                                                 :text-field-props="{
                                                     appendIcon: 'mdi-calendar',
                                                     dense: true,
-                                                    outlined: true
+                                                    outlined: true,
+                                                    hideDetails: true
                                                 }"
                                                 :date-picker-props="{
-                                                    firstDayOfWeek: 1
+                                                    firstDayOfWeek: 1,
+                                                    locale: 'hu'
                                                 }"
                                                 :time-picker-props="{
                                                     format: '24hr',
@@ -69,21 +76,27 @@
                                     </v-col>
                                     <v-col
                                         align-self="start"
-                                        cols="12"
+                                        cols="6"
                                         md="2"
                                         lg="1"
                                     >
                                         <v-btn
                                             type="submit"
                                             :disabled="invalid || pristine"
+                                            medium
                                             color="primary"
                                         >
-                                            {{ isEditing ? 'Save' : 'Create'}}
+                                            <v-icon
+                                                color="white"
+                                                medium
+                                            >
+                                                {{ isEditing ? 'mdi-check' : 'mdi-plus'}}
+                                            </v-icon>
                                         </v-btn>
                                     </v-col>
                                     <v-col
                                         align-self="start"
-                                        cols="12"
+                                        cols="6"
                                         md="2"
                                         lg="1"
                                     >
@@ -91,8 +104,14 @@
                                             color="#ff0000"
                                             :disabled="!item.title && !item.date"
                                             @click="resetItemValues"
+                                            medium
                                         >
-                                            {{ isEditing ? 'Cancel' : 'Clear'}}
+                                            <v-icon
+                                                color="white"
+                                                medium
+                                            >
+                                                mdi-close
+                                            </v-icon>
                                         </v-btn>
                                     </v-col>
                                     <v-spacer />
@@ -104,7 +123,7 @@
             </v-container>
 
             <h1 v-if="!countdownItems.length">
-                Countdown List is empty.
+                Az eseménylista üres.
             </h1>
 
             <div
@@ -125,13 +144,7 @@
                                 md="6"
                             >
                                 <h1>{{ countdownItem.title }}</h1>
-                                <h3 class="mt-4" style="color: red;">
-                                    {{
-                                        countdownItem.date.endsWith('00:00:00')
-                                            ? countdownItem.date.substring(0, 10)
-                                            : countdownItem.date
-                                    }}
-                                </h3>
+                                <h3 class="mt-4" style="color: red;">{{ getCountdownItemDate(countdownItem.date) }}</h3>
                             </v-col>
                             <v-spacer />
                             <v-col
@@ -139,9 +152,9 @@
                                 cols="12"
                                 md="4"
                             >
-                                <h1 v-if="new Date(countdownItem.date).getTime() < new Date().getTime()">
-                                    Time expired
-                                </h1>
+                                <h2 v-if="new Date(countdownItem.date).getTime() < new Date().getTime()">
+                                    Dátum elérve
+                                </h2>
                                 <flip-countdown
                                     v-else
                                     :deadline="countdownItem.date.toString()"
@@ -158,14 +171,24 @@
                                     text
                                     @click="setEditItem(countdownItem.id)"
                                 >
-                                    Edit
+                                    <v-icon
+                                        color="green"
+                                        large
+                                    >
+                                        mdi-circle-edit-outline
+                                    </v-icon>
                                 </v-btn>
                                 <v-btn
                                     class="ml-5"
                                     text
                                     @click="deleteCountdownItem(countdownItem.id)"
                                 >
-                                    Remove
+                                    <v-icon
+                                        color="red"
+                                        large
+                                    >
+                                        mdi-minus-circle
+                                    </v-icon>
                                 </v-btn>
                             </v-col>
                         </v-row>
@@ -245,6 +268,7 @@ export default {
 
                 return dateA < dateB ? -1 : (dateA > dateB ? 1 : 0);
             });
+            this.setCountdownLang();
         },
         resetItemValues() {
             this.isEditing = false;
@@ -252,6 +276,24 @@ export default {
             this.$refs.datetime.date = '';
             this.$refs.datetime.time = '00:00:00';
             this.sortCountdownData();
+        },
+        getCountdownItemDate(date) {
+            const days = ['V', 'H', 'K', 'Sze', 'Cs', 'P', 'Szo'];
+            return `${date.endsWith('00:00:00')
+                ? date.substring(0, 10)
+                : date}, ${days[new Date(date).getDay()]}`;
+        },
+        setCountdownLang() {
+            setTimeout(() => {
+                // eslint-disable-next-line max-len
+                document.querySelectorAll('[id^="flip-card-days"] .flip-clock__slot').forEach(e => e.innerHTML = 'Napok');
+                // eslint-disable-next-line max-len
+                document.querySelectorAll('[id^="flip-card-hours"] .flip-clock__slot').forEach(e => e.innerHTML = 'Órák');
+                // eslint-disable-next-line max-len
+                document.querySelectorAll('[id^="flip-card-minutes"] .flip-clock__slot').forEach(e => e.innerHTML = 'Percek');
+                // eslint-disable-next-line max-len
+                document.querySelectorAll('[id^="flip-card-seconds"] .flip-clock__slot').forEach(e => e.innerHTML = 'Másodpercek');
+            }, 50);
         }
     },
     watch: {

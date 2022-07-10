@@ -56,14 +56,13 @@
                                 @click="importFile"
                                 id="import"
                             >
-                                <span class="mr-2">Import the file</span>
+                                <span class="mr-2">File importálása</span>
                             </v-btn>
                         </v-container>
-                        <h2 style="color: red;" class="mt-5">All current data will be lost!</h2>
+                        <h2 style="color: red;" class="mt-5">Minden adat törlésre fog kerülni!</h2>
                         <ul class="white--text mt-2">
-                            <li>Must be a JSON File</li>
-                            <li>Data must only have title and date parameters</li>
-                            <li>Data can contain an id parameter, but will not be imported</li>
+                            <li>A file tipusa JSON-nak kell lennie</li>
+                            <li>Adatoknak szükséges adattagjai: title, date</li>
                         </ul>
                     </v-card-text>
                 </v-card>
