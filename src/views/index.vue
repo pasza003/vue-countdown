@@ -231,20 +231,20 @@ export default {
                 let objIndex = this.countdownItems.findIndex(obj => obj.id === this.item.id);
                 this.countdownItems[objIndex].title = this.item.title;
                 this.countdownItems[objIndex].date = date;
-                this.$emit('showSnackBarMessage', 'green', 'Item succesfully edited');
+                this.$emit('showSnackBarMessage', 'green', 'Sikeres szerkesztés');
             } else {
                 this.countdownItems.push({
                     id: v4(),
                     title: this.item.title,
                     date
                 });
-                this.$emit('showSnackBarMessage', 'green', 'Item succesfully created');
+                this.$emit('showSnackBarMessage', 'green', 'Sikeres létrehozás');
             }
             this.resetItemValues();
         },
         deleteCountdownItem(id) {
             this.countdownItems = this.countdownItems.filter(countdownItem => countdownItem.id !== id);
-            this.$emit('showSnackBarMessage', 'green', 'Item succesfully deleted');
+            this.$emit('showSnackBarMessage', 'green', 'Sikeres törlés');
             this.resetItemValues();
         },
         setEditItem(id) {
@@ -286,13 +286,13 @@ export default {
         setCountdownLang() {
             setTimeout(() => {
                 // eslint-disable-next-line max-len
-                document.querySelectorAll('[id^="flip-card-days"] .flip-clock__slot').forEach(e => e.innerHTML = 'Napok');
+                document.querySelectorAll('[id^="flip-card-days"] .flip-clock__slot').forEach(e => e.innerHTML = 'Nap');
                 // eslint-disable-next-line max-len
-                document.querySelectorAll('[id^="flip-card-hours"] .flip-clock__slot').forEach(e => e.innerHTML = 'Órák');
+                document.querySelectorAll('[id^="flip-card-hours"] .flip-clock__slot').forEach(e => e.innerHTML = 'Óra');
                 // eslint-disable-next-line max-len
-                document.querySelectorAll('[id^="flip-card-minutes"] .flip-clock__slot').forEach(e => e.innerHTML = 'Percek');
+                document.querySelectorAll('[id^="flip-card-minutes"] .flip-clock__slot').forEach(e => e.innerHTML = 'Perc');
                 // eslint-disable-next-line max-len
-                document.querySelectorAll('[id^="flip-card-seconds"] .flip-clock__slot').forEach(e => e.innerHTML = 'Másodpercek');
+                document.querySelectorAll('[id^="flip-card-seconds"] .flip-clock__slot').forEach(e => e.innerHTML = 'Másodperc');
             }, 50);
         }
     },

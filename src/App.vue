@@ -46,6 +46,12 @@
                     </v-card-title>
                     <v-card-text>
                         <v-container class="text-center">
+                            <v-checkbox
+                                v-model="eraseAllData"
+                                label="Minden adat törlése"
+                                dense
+                                color="primary"
+                            />
                             <v-file-input
                                 id="selectFiles"
                                 label="Import"
@@ -59,7 +65,7 @@
                                 <span class="mr-2">File importálása</span>
                             </v-btn>
                         </v-container>
-                        <h2 style="color: red;" class="mt-5">Minden adat törlésre fog kerülni!</h2>
+                        <h2 style="color: red;" class="mt-5" v-if="eraseAllData">Minden adat törlésre fog kerülni!</h2>
                         <ul class="white--text mt-2">
                             <li>A file tipusa JSON-nak kell lennie</li>
                             <li>Adatoknak szükséges adattagjai: title, date</li>
@@ -91,6 +97,7 @@ export default {
     data: () => ({
         importDialog: false,
         exportBtn: false,
+        eraseAllData: false,
         snackbar: {
             show: false,
             message: null,
@@ -115,20 +122,21 @@ export default {
                     result.forEach(item => {
                         const keys = Object.keys(item);
 
-                        // title and date keys are a must have, but id is optional
+                        // must have title and date keys, but id is optional
                         let keyAmount = 2;
                         if (keys.includes('id')) {
                             keyAmount += 1;
                         }
 
                         if (keys.length != keyAmount) {
-                            this.showSnackBarMessage('red', 'Error while importing, incorrect amount of keys');
-                            throw new Error('Not correct amount of keys');
+                            // eslint-disable-next-line max-len
+                            this.showSnackBarMessage('red', 'Hiba történt importálás során, nem megfelelő számú adattagok');
+                            throw new Error('Nem megfelelő számú adattagok');
                         }
 
                         if (!keys.includes('title') || !keys.includes('date')) {
-                            this.showSnackBarMessage('red', 'Error while importing, incorrect keys');
-                            throw new Error('Incorrect keys');
+                            this.showSnackBarMessage('red', 'Hiba történt importálás során, nem megfelelő adattagok');
+                            throw new Error('Nem megfelelő adattagok');
                         }
 
                         newCountdownItems.push({
@@ -138,8 +146,13 @@ export default {
                         });
                     });
 
-                    localStorage.setItem('countdownItems', JSON.stringify(newCountdownItems));
-                    this.showSnackBarMessage('green', 'Successful import');
+                    if (this.eraseAllData) {
+                        localStorage.setItem('countdownItems', JSON.stringify(newCountdownItems));
+                    } else {
+                        const currentData = JSON.parse(localStorage.getItem('countdownItems'));
+                        localStorage.setItem('countdownItems', JSON.stringify([...currentData, ...newCountdownItems]));
+                    }
+                    this.showSnackBarMessage('green', 'Sikeres importálás');
                     setTimeout(() => {
                         window.location.reload();
                     }, 500);
