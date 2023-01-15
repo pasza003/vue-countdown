@@ -48,7 +48,7 @@
                         <v-container class="text-center">
                             <v-checkbox
                                 v-model="eraseAllData"
-                                label="Minden adat törlése"
+                                label="Erase all data"
                                 dense
                                 color="primary"
                             />
@@ -62,13 +62,13 @@
                                 @click="importFile"
                                 id="import"
                             >
-                                <span class="mr-2">File importálása</span>
+                                <span class="mr-2">Import</span>
                             </v-btn>
                         </v-container>
-                        <h2 style="color: red;" class="mt-5" v-if="eraseAllData">Minden adat törlésre fog kerülni!</h2>
+                        <h2 style="color: red;" class="mt-5" v-if="eraseAllData">All current data will be lost!</h2>
                         <ul class="white--text mt-2">
-                            <li>A file tipusa JSON-nak kell lennie</li>
-                            <li>Adatoknak szükséges adattagjai: title, date</li>
+                            <li>Must be a JSON File</li>
+                            <li>Data must only have title and date parameters</li>
                         </ul>
                     </v-card-text>
                 </v-card>
@@ -130,13 +130,13 @@ export default {
 
                         if (keys.length != keyAmount) {
                             // eslint-disable-next-line max-len
-                            this.showSnackBarMessage('red', 'Hiba történt importálás során, nem megfelelő számú adattagok');
-                            throw new Error('Nem megfelelő számú adattagok');
+                            this.showSnackBarMessage('red', 'Error while importing, invalid amount of keys');
+                            throw new Error('Invalid amount of keys');
                         }
 
                         if (!keys.includes('title') || !keys.includes('date')) {
-                            this.showSnackBarMessage('red', 'Hiba történt importálás során, nem megfelelő adattagok');
-                            throw new Error('Nem megfelelő adattagok');
+                            this.showSnackBarMessage('red', 'Error while importing, invalid keys');
+                            throw new Error('Invalid keys');
                         }
 
                         newCountdownItems.push({
@@ -152,7 +152,7 @@ export default {
                         const currentData = JSON.parse(localStorage.getItem('countdownItems'));
                         localStorage.setItem('countdownItems', JSON.stringify([...currentData, ...newCountdownItems]));
                     }
-                    this.showSnackBarMessage('green', 'Sikeres importálás');
+                    this.showSnackBarMessage('green', 'Successfully imported items');
                     setTimeout(() => {
                         window.location.reload();
                     }, 500);

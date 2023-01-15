@@ -21,12 +21,12 @@
                                     >
                                         <ValidationProvider
                                             v-slot="{ errors }"
-                                            name="Név"
+                                            name="Name"
                                             rules="required"
                                         >
                                             <v-text-field
                                                 v-model="item.title"
-                                                label="Név"
+                                                label="Name"
                                                 autocomplete="off"
                                                 dense
                                                 outlined
@@ -40,14 +40,14 @@
                                         md="3"
                                     >
                                         <ValidationProvider
-                                            name="Dátum"
+                                            name="Date"
                                             rules="required"
                                         >
                                             <v-datetime-picker
-                                                label="Dátum"
+                                                label="Date"
                                                 v-model="item.date"
                                                 ref="datetime"
-                                                clearText="TÖRLÉS"
+                                                clearText="DELETE"
                                                 okText="OK"
                                                 :text-field-props="{
                                                     appendIcon: 'mdi-calendar',
@@ -123,7 +123,7 @@
             </v-container>
 
             <h1 v-if="!countdownItems.length">
-                Az eseménylista üres.
+                Countdown List is empty.
             </h1>
 
             <div
@@ -153,7 +153,7 @@
                                 md="4"
                             >
                                 <h2 v-if="new Date(countdownItem.date).getTime() < new Date().getTime()">
-                                    Dátum elérve
+                                    Date reached
                                 </h2>
                                 <flip-countdown
                                     v-else
@@ -231,20 +231,20 @@ export default {
                 let objIndex = this.countdownItems.findIndex(obj => obj.id === this.item.id);
                 this.countdownItems[objIndex].title = this.item.title;
                 this.countdownItems[objIndex].date = date;
-                this.$emit('showSnackBarMessage', 'green', 'Sikeres szerkesztés');
+                this.$emit('showSnackBarMessage', 'green', 'Item successfully edited');
             } else {
                 this.countdownItems.push({
                     id: v4(),
                     title: this.item.title,
                     date
                 });
-                this.$emit('showSnackBarMessage', 'green', 'Sikeres létrehozás');
+                this.$emit('showSnackBarMessage', 'green', 'Item successfully added');
             }
             this.resetItemValues();
         },
         deleteCountdownItem(id) {
             this.countdownItems = this.countdownItems.filter(countdownItem => countdownItem.id !== id);
-            this.$emit('showSnackBarMessage', 'green', 'Sikeres törlés');
+            this.$emit('showSnackBarMessage', 'green', 'Item successfully deleted');
             this.resetItemValues();
         },
         setEditItem(id) {
@@ -278,7 +278,7 @@ export default {
             this.sortCountdownData();
         },
         getCountdownItemDate(date) {
-            const days = ['V', 'H', 'K', 'Sze', 'Cs', 'P', 'Szo'];
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             return `${date.endsWith('00:00:00')
                 ? date.substring(0, 10)
                 : date}, ${days[new Date(date).getDay()]}`;
@@ -286,13 +286,13 @@ export default {
         setCountdownLang() {
             setTimeout(() => {
                 // eslint-disable-next-line max-len
-                document.querySelectorAll('[id^="flip-card-days"] .flip-clock__slot').forEach(e => e.innerHTML = 'Nap');
+                document.querySelectorAll('[id^="flip-card-days"] .flip-clock__slot').forEach(e => e.innerHTML = 'Days');
                 // eslint-disable-next-line max-len
-                document.querySelectorAll('[id^="flip-card-hours"] .flip-clock__slot').forEach(e => e.innerHTML = 'Óra');
+                document.querySelectorAll('[id^="flip-card-hours"] .flip-clock__slot').forEach(e => e.innerHTML = 'Hours');
                 // eslint-disable-next-line max-len
-                document.querySelectorAll('[id^="flip-card-minutes"] .flip-clock__slot').forEach(e => e.innerHTML = 'Perc');
+                document.querySelectorAll('[id^="flip-card-minutes"] .flip-clock__slot').forEach(e => e.innerHTML = 'Minutes');
                 // eslint-disable-next-line max-len
-                document.querySelectorAll('[id^="flip-card-seconds"] .flip-clock__slot').forEach(e => e.innerHTML = 'Másodperc');
+                document.querySelectorAll('[id^="flip-card-seconds"] .flip-clock__slot').forEach(e => e.innerHTML = 'Seconds');
             }, 50);
         }
     },
