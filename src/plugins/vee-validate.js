@@ -4,7 +4,7 @@ import { required } from 'vee-validate/dist/rules';
 
 extend('required', {
     ...required,
-    message: (a) => `${a} mező kitöltése kötelező`,
+    message: (a) => `${a} is required`,
 });
 
 Vue.component('ValidationProvider', ValidationProvider);
